@@ -18,49 +18,30 @@ class HarrowDeck():
             ['The Unicorn','CG'], ['The Uprising','CN'],['The Vision','CN'], ['The Wanderer','NG'],['The Waxworks','CE'], ['The Winged Serpent','LG'],
             ]
             # abliity catagories https://pathfinder.fandom.com/wiki/List_of_harrow_cards
-            str = ['The Paladin','The Keep','The Big Sky','The Forge','The Bear','The Uprising','The Fiend','The Beating','The Cyclone']
-            dex = ['The Dance','The Cricket','The Juggler','The Locksmith','The Peacock','The Rabbit Prince','The Avalanche','The Crows',"The Demon's Lantern"]
-            con = ['The Trumpet','The Survivor','The Desert','The Brass Dwarf','The Teamster','The Mountain Man','The Tangled Briar','The Sickness','The Waxworks']
-            int = ['The Hidden Truth','The Wanderer','The Joke','The Inquisitor','The Foreign Trader','The Vision','The Rakshasa','The Fool','The Snakebite']
-            wis = ['The Winged Serpent','The Midwife','The Publican','The Queen Mother','The Owl','The Carnival','The Eclipse','The Mute Hag','The Lost']
-            cha = ['The Empty Throne','The Theater','The Unicorn','The Marriage','The Twin','The Courtesan','The Tyrant','The Betrayal','The Liar']
-            #abilities = [str,dex,con,int,wis,cha]
+            abilities_dict = {
+                'str' : ['The Paladin','The Keep','The Big Sky','The Forge','The Bear','The Uprising','The Fiend','The Beating','The Cyclone'],
+                'dex' : ['The Dance','The Cricket','The Juggler','The Locksmith','The Peacock','The Rabbit Prince','The Avalanche','The Crows',"The Demon's Lantern"],
+                'con' : ['The Trumpet','The Survivor','The Desert','The Brass Dwarf','The Teamster','The Mountain Man','The Tangled Briar','The Sickness','The Waxworks'],
+                'int' : ['The Hidden Truth','The Wanderer','The Joke','The Inquisitor','The Foreign Trader','The Vision','The Rakshasa','The Fool','The Snakebite'],
+                'wis' : ['The Winged Serpent','The Midwife','The Publican','The Queen Mother','The Owl','The Carnival','The Eclipse','The Mute Hag','The Lost'],
+                'cha' : ['The Empty Throne','The Theater','The Unicorn','The Marriage','The Twin','The Courtesan','The Tyrant','The Betrayal','The Liar']
+            }
             # Combine cards and abilities
-            for card in cards:
-                if card[0] in str:
-                    card.append('Str')
-                if card[0] in dex:
-                    card.append('Dex')
-                if card[0] in con:
-                    card.append('Con')
-                if card[0] in int:
-                    card.append('Int')
-                if card[0] in wis:
-                    card.append('Wis')
-                if card[0] in cha:
-                    card.append('Cha')
+            for a, c in abilities_dict.items():
+                for card in cards:
+                    if card[0] in c:
+                        card.append(a.upper())
             self.deck = cards
-        elif type == 'standard54':
-            # a list of all the suits
-            self.Suits = ["\u2663", "\u2665", "\u2666", "\u2660"]
-            # a list of all the ranks
-            self.Ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
-            # jokers
-            self.Jokers = ['RedJ','BlueJ']
-            self.deck = list(product(self.Ranks, self.Suits)) + self.Jokers
-        elif type == 'standard':
-            # a list of all the suits
-            self.Suits = ["\u2663", "\u2665", "\u2666", "\u2660"]
-            # a list of all the ranks
-            self.Ranks = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
-            self.deck = list(product(self.Ranks, self.Suits))
+    @staticmethod
     def shuffle(self):
         return shuffle(self.deck)
+    @staticmethod
     def draw(self):
         if self.deck:
             card = self.deck.pop(0)
             return f'Card: {card[0]}, Alignment: {card[1]}, Ability: {card[2]}'
         else:
             return "Deck is empty!"
+    @staticmethod
     def remain(self):
         return len(self.deck)
