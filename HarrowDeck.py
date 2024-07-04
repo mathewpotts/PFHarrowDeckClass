@@ -31,16 +31,34 @@ class HarrowDeck():
                     if card[0] in c:
                         card.append(a.upper())
             self.deck = cards
+            self.drawn_cards_list = []
 
     def shuffle(self):
-        return shuffle(self.deck)
+        shuffle(self.deck)
 
     def draw(self):
         if self.deck:
             card = self.deck.pop(0)
-            return f'Card: {card[0]}, Alignment: {card[1]}, Ability: {card[2]}'
+            self.drawn_cards_list.append(card)
+            print(f'Card: {card[0]}, Alignment: {card[1]}, Ability: {card[2]}')
         else:
-            return "Deck is empty!"
-            
+            print("Deck is empty!")
+
     def remain(self):
-        return len(self.deck)
+        print(f"{len(self.deck)} cards remain in your deck.")
+
+    def drawn_cards(self):
+        for card in self.drawn_cards_list:
+            print(f'Card: {card[0]}, Alignment: {card[1]}, Ability: {card[2]}')
+
+    def add_cards_back(self, card_names):
+        if isinstance(card_names, str):
+            card_names = [card_names]
+        for card_name in card_names:
+            card = next((card for card in self.drawn_cards_list if card[0] == card_name), None)
+            if card:
+                self.deck.append(card)
+                self.drawn_cards_list.remove(card)
+                print(f'Card {card_name} added back to the deck.')
+            else:
+                print(f'Card {card_name} is not in the drawn cards list.')
