@@ -1,5 +1,4 @@
 
-from itertools import product
 from random import shuffle
 
 class HarrowDeck():
@@ -32,16 +31,16 @@ class HarrowDeck():
                     if card[0] in c:
                         card.append(a.upper())
             self.deck = cards
-    @staticmethod
+
     def shuffle(self):
         return shuffle(self.deck)
-    @staticmethod
+
     def draw(self):
         if self.deck:
             card = self.deck.pop(0)
             return f'Card: {card[0]}, Alignment: {card[1]}, Ability: {card[2]}'
         else:
             return "Deck is empty!"
-    @staticmethod
+            
     def remain(self):
         return len(self.deck)
