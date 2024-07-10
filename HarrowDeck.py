@@ -1,7 +1,17 @@
-
+#!/usr/bin/env python3
+################################################################################
+### Import Libraries ###########################################################
+################################################################################
+import tkinter as tk
+from PIL import Image, ImageTk
 from random import shuffle
+from glob import glob
 
-class HarrowDeck():
+
+################################################################################
+#### Classes ###################################################################
+################################################################################
+class HarrowDeck:
     def __init__(self, type='pfharrow'):
         if type == 'pfharrow':
             # Taken from https://www.d20pfsrd.com/magic-items/artifacts/minor-artifacts/deck-of-many-things-harrow
@@ -40,16 +50,18 @@ class HarrowDeck():
         if self.deck:
             card = self.deck.pop(0)
             self.drawn_cards_list.append(card)
-            print(f'Card: {card[0]}, Alignment: {card[1]}, Ability: {card[2]}')
+            return card
         else:
-            print("Deck is empty!")
+            return None
 
     def remain(self):
-        print(f"{len(self.deck)} cards remain in your deck.")
+        return len(self.deck)
 
     def drawn_cards(self):
+        drawn_cards = []
         for card in self.drawn_cards_list:
-            print(f'Card: {card[0]}, Alignment: {card[1]}, Ability: {card[2]}')
+            drawn_cards.append(card)
+        return drawn_cards
 
     def add_cards_back(self, card_names):
         if isinstance(card_names, str):
@@ -62,3 +74,78 @@ class HarrowDeck():
                 print(f'Card {card_name} added back to the deck.')
             else:
                 print(f'Card {card_name} is not in the drawn cards list.')
+
+class HarrowGUI:
+    def __init__(self, root):
+        self.root = root
+
+        # Window title
+        self.root.title("Harrow Deck Viewer")
+
+        # Init Deck Class
+        self.deck = HarrowDeck()
+
+        # Deck images
+        DeckBack_path = 'assets\stackfulldeck.png'
+        self.card_images = glob(f'assets\*')
+        self.im = Image.open(DeckBack_path)
+        self.imWidth, self.imHeight = self.im.size
+        self.DeckBack = ImageTk.PhotoImage(self.im) # get the image import into tkinter
+        width,height = Image.open(DeckBack_path).size
+        self.DeckBack_im = tk.Button(root, image = self.DeckBack, command = self.draw_card)
+        self.DeckBack_im.grid(column=0, row=0)
+        self.root.grid_columnconfigure(1,minsize=self.imWidth)
+        if self.deck.remain() < 54:
+            self.DeckFace_im = tk.Button(root, command = self.return_card)
+            self.DeckFace_im.grid(column=1, row=0)
+
+        # Widgets Buttons
+        shuffle_button = tk.Button(root, text = 'Shuffle', command = self.shuffle)
+        remain_button = tk.Button(root, text = 'Cards Remaining', command = self.remains)
+        buttons = [shuffle_button, remain_button]
+        for i,button in enumerate(buttons):
+            button.grid(column=0+i, row=1)
+
+    def draw_card(self):
+        card = self.deck.draw()
+        if card is None:
+            print("Deck is empty!")
+        else:
+            print(card[0])
+            card_im = [im for im in self.card_images for c in card[0].lower().split()[1:] if c in im]
+            print(card_im)
+            self.DeckFace = ImageTk.PhotoImage(Image.open(card_im[0])) # get the image import into tkinter
+            self.DeckFace_im = tk.Button(self.root, image = self.DeckFace, command = self.return_card)
+            self.DeckFace_im.grid(column=1, row=0)
+
+    def remains(self):
+        remaining_cards = self.deck.remain()
+        print(remaining_cards)
+
+    def shuffle(self):
+        self.deck.shuffle()
+        print('deck is shuffled')
+
+    def return_card(self):
+        self.deck.add_cards_back(self.deck.drawn_cards()[-1][0])
+        try:
+            card = self.deck.drawn_cards()[-1][0]
+            card_im = [im for im in self.card_images for c in card.lower().split()[1:] if c in im]
+            self.DeckFace = ImageTk.PhotoImage(Image.open(card_im[0])) # get the image import into tkinter
+            self.DeckFace_im = tk.Button(self.root, image = self.DeckFace, command = self.return_card)
+            self.DeckFace_im.grid(column=1, row=0)
+        except IndexError:
+            self.DeckFace_im.destroy()
+
+
+################################################################################
+#### Functions #################################################################
+################################################################################
+def GUI():
+    root = tk.Tk()
+    root.geometry() # set default window size
+    app = HarrowGUI(root)
+    root.mainloop()
+
+if __name__ == "__main__":
+    GUI()
