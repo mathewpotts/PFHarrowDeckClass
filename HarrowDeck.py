@@ -3,9 +3,11 @@
 ### Import Libraries ###########################################################
 ################################################################################
 import tkinter as tk
+from tkinter import messagebox
 from PIL import Image, ImageTk
 from random import shuffle
 from glob import glob
+import pickle
 
 
 ################################################################################
@@ -75,6 +77,13 @@ class HarrowDeck:
             else:
                 print(f'Card {card_name} is not in the drawn cards list.')
 
+    def save_deck(self):
+        deck = {}
+        deck['Deck'] = self.deck
+        deck['DrawnCards'] = self.drawn_cards_list
+        with open('deck.pkl','wb') as f:
+            pickle.dump(deck,f)
+
 class HarrowGUI:
     def __init__(self, root):
         self.root = root
@@ -85,6 +94,26 @@ class HarrowGUI:
         # Init Deck Class
         self.deck = HarrowDeck()
 
+        # Create a menubar
+        menubar = tk.Menu()
+        root.config(menu=menubar)
+
+        #Create File menu
+        file_menu = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="File", menu=file_menu)
+        file_menu.add_command(label="Save", command=self.save_file)
+
+        # Set up Card remaining label
+        self.card_remaining = tk.StringVar()
+        self.card_remaining.set(f"Number of Cards in Deck: {self.deck.remain()}")
+        remainLabel = tk.Label(root, textvariable = self.card_remaining)
+        remainLabel.grid(row = 0, column = 0, columnspan=2)
+
+        # Set up Card Properties Label
+        self.card_props = tk.StringVar()
+        card_props_ali_label = tk.Label(root, textvariable = self.card_props)
+        card_props_ali_label.grid(row = 1, column = 3)
+
         # Deck images
         DeckBack_path = 'assets\stackfulldeck.png'
         self.card_images = glob(f'assets\*')
@@ -93,18 +122,18 @@ class HarrowGUI:
         self.DeckBack = ImageTk.PhotoImage(self.im) # get the image import into tkinter
         width,height = Image.open(DeckBack_path).size
         self.DeckBack_im = tk.Button(root, image = self.DeckBack, command = self.draw_card)
-        self.DeckBack_im.grid(column=0, row=0)
+        self.DeckBack_im.grid(column=0, row=1)
         self.root.grid_columnconfigure(1,minsize=self.imWidth)
-        if self.deck.remain() < 54:
-            self.DeckFace_im = tk.Button(root, command = self.return_card)
-            self.DeckFace_im.grid(column=1, row=0)
+
+        # Init face up card image as None
+        self.DeckFace_im = None
 
         # Widgets Buttons
         shuffle_button = tk.Button(root, text = 'Shuffle', command = self.shuffle)
-        remain_button = tk.Button(root, text = 'Cards Remaining', command = self.remains)
-        buttons = [shuffle_button, remain_button]
+        # more to come...
+        buttons = [shuffle_button,]
         for i,button in enumerate(buttons):
-            button.grid(column=0+i, row=1)
+            button.grid(column=0+i, row=2)
 
     def draw_card(self):
         card = self.deck.draw()
@@ -115,12 +144,25 @@ class HarrowGUI:
             card_im = [im for im in self.card_images for c in card[0].lower().split()[1:] if c in im]
             print(card_im)
             self.DeckFace = ImageTk.PhotoImage(Image.open(card_im[0])) # get the image import into tkinter
-            self.DeckFace_im = tk.Button(self.root, image = self.DeckFace, command = self.return_card)
-            self.DeckFace_im.grid(column=1, row=0)
+            if self.DeckFace_im:
+                self.DeckFace_im.config(image=self.DeckFace)
+                self.DeckFace_im.image = self.DeckFace
+            else:
+                self.DeckFace_im = tk.Button(self.root, image = self.DeckFace, command = self.return_card)
+                self.DeckFace_im.image = self.DeckFace
+                self.DeckFace_im.grid(column=1, row=1)
+            self.update_remains()
+            self.update_card_props()
 
-    def remains(self):
-        remaining_cards = self.deck.remain()
-        print(remaining_cards)
+    def update_remains(self):
+        self.card_remaining.set(f"Number of Cards in Deck: {self.deck.remain()}")
+
+    def update_card_props(self):
+        if self.deck.remain() < 54:
+            name, alignment, attribute = self.deck.drawn_cards()[-1]
+            self.card_props.set(f'Alignment: {alignment}\nAbility: {attribute}')
+        else:
+            self.card_props.set('')
 
     def shuffle(self):
         self.deck.shuffle()
@@ -128,19 +170,29 @@ class HarrowGUI:
 
     def return_card(self):
         self.deck.add_cards_back(self.deck.drawn_cards()[-1][0])
-        try:
+        if self.deck.remain() < 54:
             card = self.deck.drawn_cards()[-1][0]
             card_im = [im for im in self.card_images for c in card.lower().split()[1:] if c in im]
             self.DeckFace = ImageTk.PhotoImage(Image.open(card_im[0])) # get the image import into tkinter
-            self.DeckFace_im = tk.Button(self.root, image = self.DeckFace, command = self.return_card)
-            self.DeckFace_im.grid(column=1, row=0)
-        except IndexError:
+            self.DeckFace_im.config(image=self.DeckFace)
+            self.DeckFace_im.image = self.DeckFace
+        else:
             self.DeckFace_im.destroy()
+            self.DeckFace_im = None
+        self.update_remains()
+        self.update_card_props()
 
+    def save_file(self):
+        messagebox.showinfo("Save", "Save option selected")
+        self.deck.save_deck()
+
+    def load_file(self):
+        messagebox.showinfo("Load", "Load option selected")
 
 ################################################################################
 #### Functions #################################################################
 ################################################################################
+# Function to handle the Save option
 def GUI():
     root = tk.Tk()
     root.geometry() # set default window size
