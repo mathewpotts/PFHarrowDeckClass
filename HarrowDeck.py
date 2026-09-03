@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
-################################################################################
-### Import Libraries ###########################################################
-################################################################################
+# Standard library and third-party imports.
 import tkinter as tk
 from tkinter import messagebox
 from PIL import Image, ImageTk
@@ -11,12 +9,12 @@ import pickle
 
 
 ################################################################################
-#### Classes ###################################################################
+#### Deck model ################################################################
 ################################################################################
 class HarrowDeck:
     def __init__(self, type='pfharrow'):
         if type == 'pfharrow':
-            # Taken from https://www.d20pfsrd.com/magic-items/artifacts/minor-artifacts/deck-of-many-things-harrow
+            # Each card stores its name and Pathfinder alignment.
             cards = [
             ['The Avalanche','LE'], ['The Bear','N'],['The Beating','NE'], ['The Betrayal','NE'],['The Big Sky','CG'], ['The Brass Dwarf','LN'],
             ['The Carnival','CN'], ['The Courtesan','CN'],['The Cricket','NG'], ['The Crows','NE'],['The Cyclone','CE'], ['The Dance','LG'],
@@ -28,7 +26,7 @@ class HarrowDeck:
             ['The Tangled Briar','LE'], ['The Teamster','N'],['The Theater','NG'], ['The Trumpet','LG'],['The Twin','N'], ['The Tyrant','LE'],
             ['The Unicorn','CG'], ['The Uprising','CN'],['The Vision','CN'], ['The Wanderer','NG'],['The Waxworks','CE'], ['The Winged Serpent','LG'],
             ]
-            # abliity catagories https://pathfinder.fandom.com/wiki/List_of_harrow_cards
+            # Map each ability score to the nine cards in its category.
             abilities_dict = {
                 'str' : ['The Paladin','The Keep','The Big Sky','The Forge','The Bear','The Uprising','The Fiend','The Beating','The Cyclone'],
                 'dex' : ['The Dance','The Cricket','The Juggler','The Locksmith','The Peacock','The Rabbit Prince','The Avalanche','The Crows',"The Demon's Lantern"],
@@ -37,7 +35,7 @@ class HarrowDeck:
                 'wis' : ['The Winged Serpent','The Midwife','The Publican','The Queen Mother','The Owl','The Carnival','The Eclipse','The Mute Hag','The Lost'],
                 'cha' : ['The Empty Throne','The Theater','The Unicorn','The Marriage','The Twin','The Courtesan','The Tyrant','The Betrayal','The Liar']
             }
-            # Combine cards and abilities
+            # Add the ability score to the matching card records.
             for a, c in abilities_dict.items():
                 for card in cards:
                     if card[0] in c:
@@ -88,49 +86,46 @@ class HarrowGUI:
     def __init__(self, root):
         self.root = root
 
-        # Window title
+        # Configure the application window and its deck model.
         self.root.title("Harrow Deck Viewer")
 
-        # Init Deck Class
         self.deck = HarrowDeck()
 
-        # Create a menubar
+        # Create the File menu.
         menubar = tk.Menu()
         root.config(menu=menubar)
 
-        #Create File menu
         file_menu = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="File", menu=file_menu)
         file_menu.add_command(label="Save", command=self.save_file)
 
-        # Set up Card remaining label
+        # Show the number of cards still available.
         self.card_remaining = tk.StringVar()
         self.card_remaining.set(f"Number of Cards in Deck: {self.deck.remain()}")
         remainLabel = tk.Label(root, textvariable = self.card_remaining)
         remainLabel.grid(row = 0, column = 0, columnspan=2)
 
-        # Set up Card Properties Label
+        # Show the alignment and ability of the face-up card.
         self.card_props = tk.StringVar()
         card_props_ali_label = tk.Label(root, textvariable = self.card_props)
         card_props_ali_label.grid(row = 1, column = 3)
 
-        # Deck images
+        # Load the deck-back image and the available card-face images.
         DeckBack_path = 'assets\stackfulldeck.png'
         self.card_images = glob(f'assets\*')
         self.im = Image.open(DeckBack_path)
         self.imWidth, self.imHeight = self.im.size
-        self.DeckBack = ImageTk.PhotoImage(self.im) # get the image import into tkinter
+        self.DeckBack = ImageTk.PhotoImage(self.im)
         width,height = Image.open(DeckBack_path).size
         self.DeckBack_im = tk.Button(root, image = self.DeckBack, command = self.draw_card)
         self.DeckBack_im.grid(column=0, row=1)
         self.root.grid_columnconfigure(1,minsize=self.imWidth)
 
-        # Init face up card image as None
+        # The face-up card widget is created after the first draw.
         self.DeckFace_im = None
 
-        # Widgets Buttons
+        # Add deck controls.
         shuffle_button = tk.Button(root, text = 'Shuffle', command = self.shuffle)
-        # more to come...
         buttons = [shuffle_button,]
         for i,button in enumerate(buttons):
             button.grid(column=0+i, row=2)
@@ -143,7 +138,7 @@ class HarrowGUI:
             print(card[0])
             card_im = [im for im in self.card_images for c in card[0].lower().split()[1:] if c in im]
             print(card_im)
-            self.DeckFace = ImageTk.PhotoImage(Image.open(card_im[0])) # get the image import into tkinter
+            self.DeckFace = ImageTk.PhotoImage(Image.open(card_im[0]))
             if self.DeckFace_im:
                 self.DeckFace_im.config(image=self.DeckFace)
                 self.DeckFace_im.image = self.DeckFace
@@ -173,7 +168,7 @@ class HarrowGUI:
         if self.deck.remain() < 54:
             card = self.deck.drawn_cards()[-1][0]
             card_im = [im for im in self.card_images for c in card.lower().split()[1:] if c in im]
-            self.DeckFace = ImageTk.PhotoImage(Image.open(card_im[0])) # get the image import into tkinter
+            self.DeckFace = ImageTk.PhotoImage(Image.open(card_im[0]))
             self.DeckFace_im.config(image=self.DeckFace)
             self.DeckFace_im.image = self.DeckFace
         else:
@@ -189,13 +184,10 @@ class HarrowGUI:
     def load_file(self):
         messagebox.showinfo("Load", "Load option selected")
 
-################################################################################
-#### Functions #################################################################
-################################################################################
-# Function to handle the Save option
+# Application entry point.
 def GUI():
     root = tk.Tk()
-    root.geometry() # set default window size
+    root.geometry()
     app = HarrowGUI(root)
     root.mainloop()
 
